@@ -1,74 +1,81 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace HotelReservation
+namespace HotelReservationSystem
 {
     public class HotelReservation
     {
-        /// <summary>
-        /// Using dictionary as a system of hotel, which will have many hotel entries.
-        /// </summary>
-        public Dictionary<String, Hotel> availableHotels = new Dictionary<string, Hotel>();
-        public List<Hotel> HotelList = new List<Hotel>();
-        /// <summary>
-        /// Method to add new hotel into the hotel reservation system
-        /// </summary>
-        /// <param name="hotelName"></param>
-        /// <param name="weekdayRate"></param>
+        public Dictionary<string, Hotel> hotels;
 
-        public void AddHotelToSystem(String hotelName, int weekdayRate, int weekendRate, int rating)
+        public HotelReservation()
         {
-            Hotel hotel = new Hotel(hotelName, weekdayRate, weekendRate, rating);
-            availableHotels.Add(hotelName, hotel);
-            HotelList.Add(hotel);
+            hotels = new Dictionary<string, Hotel>();
         }
-        /// <summary>
-        /// Method to find cheapest hotel for a given date range.
-        /// </summary>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
-        /// <returns></returns>
 
-        public Hotel FindCheapestHotel(DateTime startDate, DateTime endDate)
+        public void AddHotel(Hotel hotel)
         {
-            if (startDate >= endDate)
+            if (hotels.ContainsKey(hotel.name))
             {
-                Console.WriteLine("End date must be after start date");
+                Console.WriteLine("Hotel Already Exists");
+                return;
+            }
+            hotels.Add(hotel.name, hotel);
+        }
+
+        public List<Hotel> FindCheapestHotels(DateTime startDate, DateTime endDate)
+        {
+            if (startDate > endDate)
+            {
+                Console.WriteLine("Start date cannot be greater than end date");
                 return null;
             }
-            else
+            var cost = Int32.MaxValue;
+            var cheapestHotels = new List<Hotel>();
+            foreach (var hotel in hotels)
             {
-                try
-                {
-                    TimeSpan difference = endDate - startDate;
-                    int noOfDays = difference.Days;
-                    HotelList.Sort((hotel1, hotel2) => hotel1.WeekdayRate.CompareTo(hotel2.WeekdayRate));
-                    Hotel cheapestHotel = HotelList.First();
-                    Console.WriteLine("Cheapest Hotel for your stay : " + HotelList.First().HotelName +
-                        " Charges for the stay : " + TotalCost(FindCheapestBestRatedHotel(startDate, endDate), startDate, endDate));
-                    return HotelList.First();
-                }
-                catch (FormatException)
-                {
-                    throw new HotelReservationCustomException(HotelReservationCustomException.ExceptionType.INVALID_DATE_FORMAT, "Date Format is Invalid");
-                }
+                var temp = cost;
+                cost = Math.Min(cost, CalculateTotalCost(hotel.Value, startDate, endDate));
+
             }
+            foreach (var hotel in hotels)
+            {
+                if (CalculateTotalCost(hotel.Value, startDate, endDate) == cost)
+                    cheapestHotels.Add(hotel.Value);
+            }
+            return cheapestHotels;
         }
-        /// <summary>
-        /// Method to calculate cost for different rates on different days
-        /// </summary>
-        /// <param name="hotel"></param>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
-        /// <returns></returns>
-        public int TotalCost(Hotel hotel, DateTime startDate, DateTime endDate)
+
+        public List<Hotel> FindCheapestBestRatedHotel(DateTime startDate, DateTime endDate)
         {
-            int cost = 0;
-            int weekdayRate = hotel.WeekdayRate;
-            int weekendRate = hotel.WeekendRate;
+            var cheapestHotels = FindCheapestHotels(startDate, endDate);
+            var cheapestBestRatedHotels = new List<Hotel>();
+            var maxRating = 0;
+            foreach (var hotel in cheapestHotels)
+                maxRating = Math.Max(maxRating, hotel.rating);
+            foreach (var hotel in cheapestHotels)
+                if (hotel.rating == maxRating)
+                    cheapestBestRatedHotels.Add(hotel);
+            return cheapestBestRatedHotels;
+
+        }
+        public List<Hotel> FindBestRatedHotel(DateTime startDate, DateTime endDate)
+        {
+            var cheapestBestRatedHotels = new List<Hotel>();
+            var maxRating = 0;
+            foreach (var hotel in hotels)
+                maxRating = Math.Max(maxRating, hotel.Value.rating);
+            foreach (var hotel in hotels)
+                if (hotel.Value.rating == maxRating)
+                    cheapestBestRatedHotels.Add(hotel.Value);
+            return cheapestBestRatedHotels;
+
+        }
+        public int CalculateTotalCost(Hotel hotel, DateTime startDate, DateTime endDate)
+        {
+            var cost = 0;
+            var weekdayRate = hotel.weekdayRatesRegular;
+            var weekendRate = hotel.weekendRatesRegular;
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
                 if (date.DayOfWeek == DayOfWeek.Sunday || date.DayOfWeek == DayOfWeek.Saturday)
@@ -78,44 +85,22 @@ namespace HotelReservation
             }
             return cost;
         }
-        /// <summary>
-        /// method to find a list of cheapest hotels for given dates
-        /// </summary>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
-        /// <returns></returns>
-        public List<Hotel> CheapestHotels(DateTime startDate, DateTime endDate)
+        public void InitializeConsoleIO()
         {
-            HotelList.Sort((hotel1, hotel2) => (TotalCost(hotel1, startDate, endDate)).CompareTo(TotalCost(hotel1, startDate, endDate)));
-            List<Hotel> cheapestHotels = new List<Hotel>();
-            if ((HotelList[0] == HotelList[1]) && (HotelList[0] == HotelList.Last()))
-            {
-                cheapestHotels.Add(HotelList[0]);
-                cheapestHotels.Add(HotelList[1]);
-                cheapestHotels.Add(HotelList[2]);
-            }
-            if (HotelList[0] == HotelList[1])
-            {
-                cheapestHotels.Add(HotelList[0]);
-                cheapestHotels.Add(HotelList[1]);
-            }
-            else
-            {
-                cheapestHotels.Add(HotelList[0]);
-            }
-            return cheapestHotels;
-        }
-        /// <summary>
-        /// Method to find cheapest hotel having best rating on given dates
-        /// </summary>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
-        /// <returns></returns>
-        public Hotel FindCheapestBestRatedHotel(DateTime startDate, DateTime endDate)
-        {
-            List<Hotel> cheapestHotels = CheapestHotels(startDate, endDate);
-            cheapestHotels.Sort((hotel1, hotel2) => hotel1.Rating.CompareTo(hotel2.Rating));
-            return cheapestHotels.Last();
+            var hotel = new Hotel();
+            Console.Write("Enter Hotel Name : ");
+            hotel.name = Console.ReadLine();
+
+            Console.Write("Enter Regular Weekday Rate :  ");
+            hotel.weekdayRatesRegular = Convert.ToInt32(Console.ReadLine());
+
+            Console.Write("Enter Regular Weekend Rate :  ");
+            hotel.weekendRatesRegular = Convert.ToInt32(Console.ReadLine());
+
+            Console.Write("Enter Rating : ");
+            hotel.rating = Convert.ToInt32(Console.ReadLine());
+
+            AddHotel(hotel);
         }
     }
 }
