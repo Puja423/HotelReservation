@@ -1,109 +1,54 @@
-﻿//using Microsoft.VisualBasic;
-//using System;
-//using System.Collections;
-//using System.Collections.Generic;
-//using System.Text;
-//using System.Threading;
-//using System.Globalization;
+﻿namespace HotelReservation
+{
+    public class HotelReservation
+{
+    /// <summary>
+    /// Using dictionary as a system of hotel, which will have many hotel entries.
+    /// </summary>
+    public Dictionary<String, Hotel> availableHotels = new Dictionary<string, Hotel>();
+    public List<Hotel> HotelList = new List<Hotel>();
+    /// <summary>
+    /// Method to add new hotel into the hotel reservation system
+    /// </summary>
+    /// <param name="hotelName"></param>
+    /// <param name="regularRates"></param>
 
-//namespace HotelReservation
-//{
-//    public class HotelReservation
-//    {
+    public void AddHotelToSystem(String hotelName, int regularRates)
+    {
+        Hotel hotel = new Hotel(hotelName, regularRates);
+        availableHotels.Add(hotelName, hotel);
+        HotelList.Add(hotel);
+    }
+    /// <summary>
+    /// Method to find cheapest hotel for a given date range.
+    /// </summary>
+    /// <param name="startDate"></param>
+    /// <param name="endDate"></param>
+    /// <returns></returns>
 
-//        ArrayList hotelList = new ArrayList();
-//        public bool AddHotel(Hotel newHotel)
-//        {
-//            hotelList.Add(newHotel);
-//            return true;
-//        }
-
-
-
-//        public double FindRate(string startDateString, string endDateString)
-//        {
-//            double rate = 0;
-//            try
-//            {
-//                CultureInfo provider = CultureInfo.InvariantCulture;
-//                DateTime startDate = Convert.ToDateTime(startDateString);
-//                DateTime endDate = Convert.ToDateTime(endDateString);
-//                for (; startDate <= endDate; startDate = startDate.AddDays(1))
-//                {
-//                    rate = rate + RATE;
-//                }
-//            }
-//            catch (Exception)
-//            {
-//                throw new HotelException(HotelException.ExceptionType.INVALID_DATE, "Invalid date entered");
-//            }
-//            return rate;
-//        }
-//        static void Main(string[] args)
-//        {
-           
-//            Console.WriteLine("Welcome to the hotel Book SystemS");
-            
-//            while (true)
-//            {
-//                Console.WriteLine("/n1.Add a hotel /n2.Cheapest hotel /n3. Exit");
-//                int option = Int32.Parse(Console.ReadLine());
-//                switch (option)
-//                {
-//                    case 1:
-//                        while (true)
-//                        {
-//                            Console.WriteLine("DO YOU WISH TO ADD NEW HOTEL(Y/N)");
-//                            string choice;
-//                            choice = Console.ReadLine();
-//                            if (choice == "Y")
-//                            {
-//                                Console.WriteLine("Enter the name of the hotel ");
-//                                string name = Console.ReadLine();
-//                                Console.WriteLine("Enter the rate of the hotel");
-//                                int rate = Int32.Parse(Console.ReadLine());
-//                                Hotel hotel = new Hotel(name, rate);
-
-
-//                                Console.WriteLine("Hotel" + name + "Added to the reservation system");
-//                            }
-//                            else
-//                            {
-//                                Console.WriteLine("thank you");
-//                                break;
-//                            }
-
-//                        }
-
-//                        break;
-//                    case 2:
-
-//                        try
-//                        {
-//                            Console.WriteLine("Enter start date of the stay in dd/MM/yyyy format");
-//                            string start = Console.ReadLine();
-//                            Console.WriteLine("Enter end day of the stay in dd/MM/yyyy format");
-//                            string end = Console.ReadLine();
-//                        }
-//                        catch (Exception e)
-//                        {
-//                            Console.WriteLine("error");
-//                        }
-
-//                        Hotel Found = service.FindCheapHotel(startDate, endDate);
-//                        Console.WriteLine(Found);
-//                        break;
-
-//                    case 3:
-//                        Console.WriteLine("thank you for using application");
-
-//                        break;
-
-
-//                }
-
-//            }
-//        }
-//    }
-//}
+    public Hotel FindCheapestHotel(DateTime startDate, DateTime endDate)
+    {
+        if (startDate >= endDate)
+        {
+            Console.WriteLine("End date must be after start date");
+            return null;
+        }
+        else
+        {
+            try
+            {
+                TimeSpan difference = endDate - startDate;
+                int noOfDays = difference.Days;
+                HotelList.Sort((hotel1, hotel2) => hotel1.RegularRate.CompareTo(hotel2.RegularRate));
+                Console.WriteLine("Cheapest Hotel for your stay : " + HotelList.First().HotelName +
+                    "Charges for the stay : " + HotelList.First().RegularRate * noOfDays);
+                return HotelList.First();
+            }
+            catch (FormatException)
+            {
+                throw new HotelReservationCustomException(HotelReservationCustomException.ExceptionType.INVALID_DATE_FORMAT, "Date Format is Invalid");
+            }
+        }
+    }
+}
 
