@@ -4,17 +4,26 @@ using System.Text;
 
 namespace HotelReservation
 {
-    class HotelException
+    public class HotelReservationCustomException : Exception
     {
-        public HotelException(ExceptionType iNVALID_HOTEL_TYPE, string v)
-        {
-        }
-
+        /// <summary>
+        /// Type Of Exceptions
+        /// </summary>
         public enum ExceptionType
         {
             INVALID_DATE,
-            INVALID_CUSTOMER_TYPE,
-            INVALID_HOTEL_TYPE
+            INVALID_DATE_FORMAT,
+        }
+        public ExceptionType type;
+
+        /// <summary>
+        /// Parameterised constructor of class
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="message"></param>
+        public HotelReservationCustomException(ExceptionType type, string message) : base(message)
+        {
+            this.type = type;
         }
     }
 }
