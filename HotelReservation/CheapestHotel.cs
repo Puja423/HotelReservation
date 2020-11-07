@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace HotelReservation
 {
     class CustomerServices
     {
+        //Regex for normal customer type
+        public string REGEX_NORMAL = @"^[Nn][Oo][Rr][Mm][Aa][Ll]$";
+        //Regex for reward customer type
+        public string REGEX_REWARD = @"^[Rr][Ee][Ww][Aa][Rr][Dd]$";
         /// <summary>
         /// Finds Cheapest Hotel with best rating
         /// </summary>
@@ -57,6 +62,20 @@ namespace HotelReservation
                 Console.WriteLine("Best hotel for your stay is " + HotelType.BRIDGEWOOD + ", Rating: " + bridgewood.RATING + ", Cost of stay: " + rateBridgewood);
             if (ridgewood.RATING > lakewood.RATING && ridgewood.RATING > bridgewood.RATING)
                 Console.WriteLine("Best hotel for your stay is " + HotelType.RIDGEWOOD + ", Rating: " + ridgewood.RATING + ", Cost of stay: " + rateRidgewood);
+        }
+        /// <summary>
+        /// Validates customer type 
+        /// </summary>
+        /// <param name="customerType"></param>
+        /// <returns>enum CustomerType</returns>
+        public CustomerType Validate(string customerType)
+        {
+            if (Regex.IsMatch(customerType, REGEX_NORMAL))
+                return CustomerType.NORMAL;
+            if (Regex.IsMatch(customerType, REGEX_REWARD))
+                return CustomerType.REWARD;
+            else
+                throw new HotelReservationException(HotelReservationException.ExceptionType.INVALID_CUSTOMER_TYPE, "Invalid customer type");
         }
     }
 }
