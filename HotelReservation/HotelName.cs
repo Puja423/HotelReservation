@@ -4,8 +4,8 @@ using System.Text;
 
 namespace HotelReservation
 {
-    public enum HotelName
-    {
-        Lakewood,Bridgewood,Ridgewood
-    }
+    /// <summary>
+    /// Enumerator of hotel names
+    /// </summary>
+    public enum HotelType { LAKEWOOD, BRIDGEWOOD, RIDGEWOOD }
 }
